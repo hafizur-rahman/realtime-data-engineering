@@ -14,7 +14,7 @@ BIRMINGHAM_COORDINATES = { "latitude": 52.4862, "longitude": -1.8904 }
 LATITUDE_INCREMENT = (BIRMINGHAM_COORDINATES['latitude'] - LONDON_COORDINATES['latitude']) / 100
 LONGITUDE_INCREMENT = (BIRMINGHAM_COORDINATES['longitude'] - LONDON_COORDINATES['longitude']) / 100
 
-KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "broker:9092")
+KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:29092")
 VEHICLE_TOPIC = os.getenv("VEHICLE_TOPIC", "vehicle_data")
 GPS_TOPIC = os.getenv("GPS_TOPIC", "gps_data")
 TRAFFIC_TOPIC = os.getenv("TRAFFIC_TOPIC", "traffic_data")
@@ -158,7 +158,7 @@ def simulate_journey(producer, device_id):
 if __name__ == "__main__":
     producer_config = {
         'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS,
-        'error_cb': lambda err: print(f'Kafka error: {err}') 
+        'error_cb': lambda err: print(f'Kafka error: {KAFKA_BOOTSTRAP_SERVERS} {err}') 
     }
 
     producer = SerializingProducer(producer_config)

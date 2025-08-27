@@ -19,7 +19,7 @@ def main():
         .config("spark.hadoop.fs.s3a.aws.credendials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")\
         .getOrCreate()
 
-    spark.sparkContext.setLogLevel("DEBUG")
+    spark.sparkContext.setLogLevel("WARN")
 
     vehicleSchema = StructType([
         StructField("id", StringType(), True),
@@ -79,7 +79,7 @@ def main():
     def read_kafka_topic(topic, schema):
         return (spark.readStream
                 .format('kafka')
-                .option('kafka.bootstrap.servers', 'localhost:29092')
+                .option('kafka.bootstrap.servers', 'broker:9092')
                 .option('subscribe', topic)
                 .option('startingOffset', 'earliest')
                 .load()
