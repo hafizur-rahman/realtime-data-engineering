@@ -1,5 +1,7 @@
 FROM bitnami/spark:latest
 
 USER root
-# Create demouser user (or any valid user)
-RUN useradd --create-home --shell /bin/bash -u 1001 demouser
+# Create etluser user (or any valid user)
+RUN useradd --create-home --shell /bin/bash -u 1001 etluser
+
+USER etluser

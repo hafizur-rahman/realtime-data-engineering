@@ -11,32 +11,54 @@ x-spark-common: &spark-common
   environment:
     SPARK_MODE: Worker
     SPARK_WORKER_CORES: 2
-    SPARK_WORKER_MEMORY: 1g
+    SPARK_WORKER_MEMORY: 3g
     SPARK_MASTER_URL: spark://spark-master:7077 
 
 services:
-  minio:
-    image: quay.io/minio/minio:latest
-    container_name: minio
+  localstack:
+    image: localstack/localstack
+    container_name: localstack
     ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - ./docker/minio/data:/export
+      - "4566:4566"
     environment:
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=SecurePassword123!
-      - MINIO_BROWSER_REDIRECT_URL=http://localhost:9001
-    command: server /data --console-address ":9001"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+      - SERVICES=s3
+      - DEBUG=1
+      - AWS_ACCESS_KEY_ID=localstack
+      - AWS_SECRET_ACCESS_KEY=localstack
     networks:
       - streamsnet
 
+  init-s3:
+    image: amazon/aws-cli:2.4.9
+    restart: on-failure
+    volumes:
+      - ./script:/script/
+    environment:
+      AWS_ACCESS_KEY_ID: "localstack"
+      AWS_SECRET_ACCESS_KEY: "localstack"
+      AWS_DEFAULT_REGION: "us-east-1"
+      AWS_S3_ENDPOINT: "localstack:4566"
+      BUCKET: "spark-streaming-data"
+    entrypoint: /bin/sh -c
+    command: [ 'sh /script/setup-s3.sh' ]
+    depends_on:
+      - localstack
+    healthcheck:
+      test: [
+          "CMD",
+          "sh",
+          "-c",
+          "AWS_ACCESS_KEY_ID=localstack
+          && AWS_SECRET_ACCESS_KEY=localstack
+          && AWS_DEFAULT_REGION=us-east-1
+          && aws --endpoint-url=http://localstack:4566 s3 ls
+          && aws --endpoint-url=http://localstack:4566 s3 spark-streaming-data"]
+      interval: 2s
+      timeout: 20s
+      retries: 10
+    networks:
+      - streamsnet
+      
   broker:
     image: confluentinc/cp-kafka:7.4.4
     hostname: broker
