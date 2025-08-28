@@ -38,5 +38,5 @@ python jobs/main.py
 
 ## Submit spark job
 ```
-sudo docker exec -it spark-master spark-submit --master spark://spark-master:7077 --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.0,org.apache.hadoop:hadoop-aws:3.4.1,software.amazon.awssdk:aws-sdk-java:2.32.30,software.amazon.awssdk:auth:2.32.30 jobs/spark-city.py
+sudo docker exec -it spark-master spark-submit --master spark://spark-master:7077 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.4 jobs/spark-city.py
 ```

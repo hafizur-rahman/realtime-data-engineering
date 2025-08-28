@@ -17,13 +17,8 @@ def main():
     conf.set('spark.hadoop.fs.s3a.access.key', s3_access_key)
     conf.set('spark.hadoop.fs.s3a.secret.key', s3_secret_key)
     conf.set('spark.hadoop.fs.s3a.impl', 'org.apache.hadoop.fs.s3a.S3AFileSystem')
-    conf.set("spark.hadoop.fs.s3a.aws.credendials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+    #conf.set("spark.hadoop.fs.s3a.aws.credendials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
     conf.set('spark.hadoop.fs.s3a.path.style.access', 'true')
-    conf.set("spark.jar.packages",
-            "org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.0,"
-            "org.apache.hadoop:hadoop-aws:4.0.0,"
-            "software.amazon.awssdk:aws-java-sdk:2.32.0,"
-            "software.amazon.awssdk:auth:2.32.0")
 
     spark = (
         SparkSession.builder.appName("SparkCitySteaming")
@@ -111,15 +106,30 @@ def main():
                 )
 
     vehicleDF = read_kafka_topic('vehicle_data', vehicleSchema).alias('vehicle')
-    
-    # gpsDF = read_kafka_topic('gps_data', gpsSchema).alias('gps')
-    # trafficDF = read_kafka_topic('traffic_data', trafficSchema).alias('traffic')
-    # weatherDF = read_kafka_topic('weather_data', weatherSchema).alias('weather')
-    # emergencyDF = read_kafka_topic('emergency_data', emergencySchema).alias('emergency')
+    gpsDF = read_kafka_topic('gps_data', gpsSchema).alias('gps')
+    trafficDF = read_kafka_topic('traffic_data', trafficSchema).alias('traffic')
+    weatherDF = read_kafka_topic('weather_data', weatherSchema).alias('weather')
+    emergencyDF = read_kafka_topic('emergency_data', emergencySchema).alias('emergency')
 
     query1 = streamWriter(vehicleDF, 
                 "s3a://spark-streaming-data/checkpoints/vehicle_data",
                 "s3a://spark-streaming-data/data/vehicle_data")
+
+    query2 = streamWriter(gpsDF, 
+                "s3a://spark-streaming-data/checkpoints/gps_data",
+                "s3a://spark-streaming-data/data/gps_data")
+    
+    query3 = streamWriter(trafficDF, 
+                "s3a://spark-streaming-data/checkpoints/traffic_data",
+                "s3a://spark-streaming-data/data/traffic_data")
+
+    query4 = streamWriter(weatherDF, 
+                "s3a://spark-streaming-data/checkpoints/weather_data",
+                "s3a://spark-streaming-data/data/weather_data")
+
+    query5 = streamWriter(emergencyDF, 
+                "s3a://spark-streaming-data/checkpoints/emergency_data",
+                "s3a://spark-streaming-data/data/emergency_data")
 
     # query1 = vehicleDF \
     #     .writeStream \
@@ -129,7 +139,6 @@ def main():
 
     query1.awaitTermination()
 
-    
 
 if __name__ == "__main__":
     main()
